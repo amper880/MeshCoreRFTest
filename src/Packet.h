@@ -1,6 +1,7 @@
 #pragma once
 
 #include <MeshCore.h>
+#include <AdminTelemetry.h>  //add new Admin Telemetry packets
 
 namespace mesh {
 
@@ -29,6 +30,12 @@ namespace mesh {
 #define PAYLOAD_TYPE_MULTIPART   0x0A    // packet is one of a set of packets
 #define PAYLOAD_TYPE_CONTROL     0x0B    // a control/discovery packet
 //...
+// New payload types for MeshRFTest admin telemetry
+// Based on MeshCore v1.12.0 - Extension for MeshRFTest
+// These are unicast, admin-only, encrypted packets; non-conflicting with existing types (assumed 0x0C and 0x0D free)
+#define PAYLOAD_TYPE_ADMIN_TELEMETRY_PING  0x0C  // Client -> Repeater: Telemetry request
+#define PAYLOAD_TYPE_ADMIN_TELEMETRY_PONG  0x0D  // Repeater -> Client: Telemetry response
+
 #define PAYLOAD_TYPE_RAW_CUSTOM   0x0F    // custom packet as raw bytes, for applications with custom encryption, payloads, etc
 
 #define PAYLOAD_VER_1       0x00   // 1-byte src/dest hashes, 2-byte MAC
