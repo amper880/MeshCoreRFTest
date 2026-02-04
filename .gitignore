@@ -16,4 +16,4 @@ cmake-*
 compile_commands.json
 .venv/
 venv/
-.bak
+*.bak

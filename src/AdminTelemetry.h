@@ -1,10 +1,16 @@
 #pragma once
 
-// src/Telemetry.h
+// src/AdminTelemetry.h
 // New header for MeshRFTest telemetry extensions
 // Based on MeshCore v1.12.0 - Extension for MeshRFTest
 
 namespace mesh {
+
+// New payload types for admin telemetry (add to Packet.h if needed, or use here)
+// Assumed non-conflicting (0x0C and 0x0D)
+#define PAYLOAD_TYPE_ADMIN_TELEMETRY_PING  0x0C  // Client -> Repeater: Telemetry request
+#define PAYLOAD_TYPE_ADMIN_TELEMETRY_PONG  0x0D  // Repeater -> Client: Telemetry response
+
 
 // Struct for Admin Telemetry Ping
 struct admin_telemetry_ping_t {
