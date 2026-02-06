@@ -16,7 +16,7 @@ namespace mesh {
 struct admin_telemetry_ping_t {
     uint8_t  version;    // = 1
     uint8_t  length;     // payload hossza (pl. 6)
-    uint32_t ping_id;    // kliens által generált egyedi ID
+    uint32_t ping_id;    // kliens altal generalt egyedi ID
 };
 
 // Struct for Admin Telemetry Pong v1

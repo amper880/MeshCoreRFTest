@@ -1,6 +1,10 @@
 #include "MyMesh.h"
 #include <algorithm>
 
+// New include for MeshRFTest telemetry
+// Based on MeshCore v1.12.0 - Extension for MeshRFTest
+#include "AdminTelemetry.h"
+
 /* ------------------------------ Config -------------------------------- */
 
 #ifndef LORA_FREQ
@@ -49,6 +53,10 @@
 #define REQ_TYPE_GET_ACCESS_LIST    0x05
 #define REQ_TYPE_GET_NEIGHBOURS     0x06
 #define REQ_TYPE_GET_OWNER_INFO     0x07     // FIRMWARE_VER_LEVEL >= 2
+
+// New REQ type for MeshRFTest admin telemetry ping
+// Based on MeshCore v1.12.0 - Extension for MeshRFTest
+#define REQ_TYPE_TELEMETRY_PING     0x0A  // Admin-only telemetry ping (non-conflicting with existing REQ types)
 
 #define RESP_SERVER_LOGIN_OK        0 // response to ANON_REQ
 
@@ -363,6 +371,49 @@ int MyMesh::handleRequest(ClientInfo *sender, uint32_t sender_timestamp, uint8_t
     sprintf((char *) &reply_data[4], "%s\n%s\n%s", FIRMWARE_VERSION, _prefs.node_name, _prefs.owner_info);
     return 4 + strlen((char *) &reply_data[4]);
   }
+
+  // New: Handle admin telemetry ping (unicast, pull-based, admin-only)
+  // Based on MeshCore v1.12.0 - Extension for MeshRFTest
+  // Payload format: payload[0] = REQ_TYPE_TELEMETRY_PING, followed by admin_telemetry_ping_t struct
+  if (payload[0] == REQ_TYPE_TELEMETRY_PING && sender->isAdmin()) {
+    // Deserialize ping from payload (after type byte)
+    mesh::admin_telemetry_ping_t ping;
+    if (payload_len < 1 + sizeof(ping)) {
+      return 0;  // Invalid length
+    }
+    memcpy(&ping, &payload[1], sizeof(ping));  // Copy struct from payload[1+]
+
+    if (ping.version != 1 || ping.length != sizeof(ping)) {
+      return 0;  // Version/length mismatch - drop
+    }
+
+    // Extract repeater-side RF metrics (from last received packet)
+    int16_t rssi = (int16_t)radio_driver.getLastRSSI();
+    int16_t snr_x10 = (int16_t)(radio_driver.getLastSNR() * 10);  // Convert to x10 (can be negative)
+    int16_t noise_floor = (int16_t)_radio->getNoiseFloor();
+
+    // Gather system telemetry
+    uint16_t vbat_mv = board.getBattMilliVolts();
+    int16_t cpu_temp_c_x10 = (int16_t)(board.getMCUTemperature() * 10);  // Convert to x10
+
+    // Build pong struct
+    mesh::admin_telemetry_pong_v1_t pong;
+    pong.version = 1;
+    pong.length = sizeof(pong);
+    pong.ping_id = ping.ping_id;
+    pong.repeater_rssi_dbm = rssi;
+    pong.repeater_snr_x10 = snr_x10;
+    pong.repeater_noise_floor = noise_floor;
+    pong.vbat_mv = vbat_mv;
+    pong.cpu_temp_c_x10 = cpu_temp_c_x10;
+
+    // Copy pong to reply_data[4+] (after timestamp)
+    memcpy(&reply_data[4], &pong, sizeof(pong));
+
+    // Return reply length (timestamp + pong size)
+    return 4 + sizeof(pong);
+  }
+
   return 0; // unknown command
 }
 
