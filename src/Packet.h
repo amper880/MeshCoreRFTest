@@ -31,6 +31,9 @@ namespace mesh {
 #define PAYLOAD_TYPE_CONTROL     0x0B    // a control/discovery packet
 //...
 
+#define PAYLOAD_TYPE_ADMIN_TELEMETRY_PING  mesh::PAYLOAD_TYPE_ADMIN_TELEMETRY_PING // Admin Telemetry Ping
+#define PAYLOAD_TYPE_ADMIN_TELEMETRY_PONG  mesh::PAYLOAD_TYPE_ADMIN_TELEMETRY_PONG // Admin Telemetry response
+
 #define PAYLOAD_TYPE_RAW_CUSTOM   0x0F    // custom packet as raw bytes, for applications with custom encryption, payloads, etc
 
 #define PAYLOAD_VER_1       0x00   // 1-byte src/dest hashes, 2-byte MAC
